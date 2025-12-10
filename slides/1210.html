@@ -1,0 +1,209 @@
+<!doctype html>
+<html lang="en">
+<head>
+    <meta charset="utf-8">
+    <title>Fed Forecasting: Agent Model Strategy</title>
+    <meta name="description" content="Multi-Modal Monetary Policy Forecasting with Agent Modeling">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reset.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.css">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/theme/blood.min.css" id="theme">
+
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/monokai.min.css">
+    
+    <style>
+        .container { display: flex; }
+        .col { flex: 1; padding: 10px; }
+        .imp-box { background: rgba(255,255,255,0.1); padding: 15px; border-radius: 10px; margin-bottom: 20px; }
+        .metric { font-size: 1.5em; color: #e74c3c; font-weight: bold; }
+        .cite { font-size: 0.6em; color: #aaa; font-style: italic; }
+        
+        /* Layout fixes */
+        .reveal .slides > section {
+            height: 100%;
+            overflow-y: auto !important; 
+        }
+        .reveal .slides > section.center-vertically {
+            display: flex !important;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            text-align: center;
+        }
+    </style>
+</head>
+<body>
+
+<div class="reveal">
+    <div class="slides">
+
+        <section class="center-vertically">
+            <h2>Forecasting the Fed's Next Move</h2>
+            <h3>The Agent Model Approach</h3>
+            <p><small>Prior Research vs. Enhanced vs. Agent Strategy</small></p>
+        </section>
+
+        <section>
+            <section>
+                <h2>Part 1: Introduction</h2>
+                <p>Purpose & Importance</p>
+            </section>
+            <section>
+                <h3>Research Purpose</h3>
+                <div class="imp-box">
+                    <p><strong>Goal:</strong> Reliably forecast U.S. Fed interest rate decisions (Raise, Hold, Lower) using a Multi-Modal approach.</p>
+                </div>
+                <ul>
+                    <li><strong>Problem:</strong> Traditional models miss nuanced textual signals.</li>
+                    <li><strong>Solution:</strong> Combine Macroeconomic Indicators + Textual Sentiment (Fed Communications).</li>
+                </ul>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2>Part 2: Prior Research</h2>
+                <p>Method 1 (The Baseline)</p>
+            </section>
+            <section>
+                <h3>Method 1: Baseline Architecture</h3>
+                <p class="cite">XGBoost Classifier trained on:</p>
+                <div class="container">
+                    <div class="col imp-box">
+                        <h4>1. Economic Data</h4>
+                        <p>Standardized indicators (CPI, Unemployment, etc.)</p>
+                    </div>
+                    <div class="col imp-box">
+                        <h4>2. Text Features</h4>
+                        <p>TF-IDF Vectors + LM Sentiment Scores.</p>
+                    </div>
+                </div>
+                <p><strong>Performance:</strong> AUC 0.8535. Good, but struggled with minority classes (Rate Cuts).</p>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2>Part 3: Enhanced Methodology</h2>
+                <p>Improving Feature Engineering</p>
+            </section>
+            <section>
+                <h3>Key Improvements</h3>
+                <ul>
+                    <li><strong>Text:</strong> Added Bi-grams (e.g., "inflation target") to capture context.</li>
+                    <li><strong>Data:</strong> Added 3M/6M Rolling Averages to capture economic <em>trends</em>.</li>
+                    <li><strong>Tuning:</strong> RandomizedSearchCV for dynamic hyperparameter optimization.</li>
+                </ul>
+                <p class="cite">Result: AUC improved to 0.8671.</p>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h2>Part 4: The Agent Model Strategy</h2>
+                <p>A Stacking Ensemble Approach</p>
+            </section>
+
+            <section>
+                <h3>The "Agent" Concept</h3>
+                <p>Instead of relying on one model, we built a <strong>Stacking Ensemble</strong>.</p>
+                <div class="container" style="font-size: 0.8em;">
+                    <div class="col imp-box">
+                        <h4>Level 1: Specialist Agents</h4>
+                        <p>Diverse models trained separately:</p>
+                        <ul>
+                            <li>Logistic Regression (The Conservative)</li>
+                            <li>Random Forest (The Generalist)</li>
+                            <li>XGBoost (The Trend Spotter)</li>
+                        </ul>
+                    </div>
+                    <div class="col imp-box">
+                        <h4>Level 2: Decision Agent</h4>
+                        <p>A Meta-Learner (Logistic Regression) that takes the <em>opinions</em> (probability predictions) of the specialists + economic data to make the final call.</p>
+                    </div>
+                </div>
+            </section>
+
+            <section>
+                <h3>Motivation: Why use Agents?</h3>
+                <div class="imp-box">
+                    <h4>1. Diversity of Opinion</h4>
+                    <p>Single models have blind spots. Linear models miss non-linear trends; Tree models can overfit. Agents cover each other's weaknesses.</p>
+                </div>
+                <div class="imp-box">
+                    <h4>2. Robustness to Imbalance</h4>
+                    <p>"Rate Cuts" are rare events. By stacking models, the Decision Agent learns to trust the specific specialist that is best at spotting these rare signals.</p>
+                </div>
+            </section>
+
+            <section>
+                <h3>Why did it perform better?</h3>
+                <ul>
+                    <li><strong>Superior Ranking:</strong> The Agent model achieved an AUC of <strong>0.8735</strong>, the highest of all experiments.</li>
+                    <li><strong>Perfect Recall on "Cuts":</strong>
+                        <p class="cite">Recall for Class -1 (Lower): <strong>1.00</strong></p>
+                        <p>Unlike previous models that ignored rate cuts, the Decision Agent successfully identified 100% of cut instances in the test set.</p>
+                    </li>
+                    <li><strong>Trust Calibration:</strong> The meta-learner learned to weigh the "confidence" of each agent, reducing false alarms on the "Hold" class.</li>
+                </ul>
+            </section>
+        </section>
+
+        <section>
+            <section>
+                <h3>Final Results Comparison</h3>
+                <table>
+                    <thead>
+                        <tr>
+                            <th>Model Strategy</th>
+                            <th>Test AUC</th>
+                            <th>Key Strength</th>
+                        </tr>
+                    </thead>
+                    <tbody>
+                        <tr>
+                            <td>Prior Research (Method 1)</td>
+                            <td>0.8535</td>
+                            <td>Baseline</td>
+                        </tr>
+                        <tr>
+                            <td>Enhanced XGBoost</td>
+                            <td>0.8671</td>
+                            <td>Trend Detection</td>
+                        </tr>
+                        <tr>
+                            <td><strong>Agent Model (Stacking)</strong></td>
+                            <td style="color: #2ecc71; font-weight: bold;">0.8735</td>
+                            <td style="color: #2ecc71;">Recall on Rare Events</td>
+                        </tr>
+                    </tbody>
+                </table>
+                <div class="imp-box" style="margin-top: 20px;">
+                    <p><strong>Conclusion:</strong> The Agent Model architecture provides the most robust and safety-critical predictions for monetary policy forecasting.</p>
+                </div>
+            </section>
+        </section>
+
+    </div>
+</div>
+
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/reveal.min.js"></script>
+<script src="https://cdnjs.cloudflare.com/ajax/libs/reveal.js/4.5.0/plugin/highlight/highlight.min.js"></script>
+<script>
+    Reveal.initialize({
+        width: 1280,
+        height: 960,
+        margin: 0.1,
+        minScale: 0.2,
+        maxScale: 2.0,
+        controls: true,
+        progress: true,
+        center: true,
+        hash: true,
+        plugins: [ RevealHighlight ],
+        transition: 'convex'
+    });
+</script>
+</body>
+</html>
